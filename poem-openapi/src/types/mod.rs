@@ -1,8 +1,5 @@
 //! Commonly used data types.
 
-#[macro_use]
-mod macros;
-
 mod any;
 mod base64_type;
 mod binary;
@@ -19,15 +16,15 @@ pub use base64_type::Base64;
 pub use binary::Binary;
 pub use error::{ParseError, ParseResult};
 pub use password::Password;
-use poem::web::Field as PoemField;
+use poem::{http::HeaderValue, web::Field as PoemField};
 use serde_json::Value;
 
 use crate::registry::{MetaSchemaRef, Registry};
 
 /// Represents a OpenAPI type.
 pub trait Type: Send + Sync {
-    /// If it is `true`, it means that this value is required.
-    const IS_REQUIRED: bool = true;
+    /// If it is `true`, it means that this type is required.
+    const IS_REQUIRED: bool;
 
     /// The raw type used for validator.
     ///
@@ -38,6 +35,9 @@ pub trait Type: Send + Sync {
     /// `i32::RawValueType` is `i32`
     /// `Option<i32>::RawValueType` is `i32`.
     type RawValueType;
+
+    /// The raw element type used for validator.
+    type RawElementValueType;
 
     /// Returns the name of this type
     fn name() -> Cow<'static, str>;
@@ -51,6 +51,11 @@ pub trait Type: Send + Sync {
 
     /// Returns a reference to the raw value.
     fn as_raw_value(&self) -> Option<&Self::RawValueType>;
+
+    /// Returns an iterator for traversing the elements.
+    fn raw_element_iter<'a>(
+        &'a self,
+    ) -> Box<dyn Iterator<Item = &'a Self::RawElementValueType> + 'a>;
 }
 
 /// Represents a type that can parsing from JSON.
@@ -78,15 +83,24 @@ pub trait ParseFromMultipartField: Sized + Type {
     }
 }
 
-/// Represents a type that can converted to JSON.
+/// Represents a type that can converted to JSON value.
 pub trait ToJSON: Type {
-    /// Convert this value to [`serde_json::Value`].
+    /// Convert this value to [`Value`].
     fn to_json(&self) -> Value;
+}
+
+/// Represents a type that can converted to HTTP header.
+pub trait ToHeader: Type {
+    /// Convert this value to [`HeaderValue`].
+    fn to_header(&self) -> Option<HeaderValue>;
 }
 
 impl<T: Type> Type for &T {
     const IS_REQUIRED: bool = T::IS_REQUIRED;
+
     type RawValueType = T::RawValueType;
+
+    type RawElementValueType = T::RawElementValueType;
 
     fn name() -> Cow<'static, str> {
         T::name()
@@ -103,6 +117,12 @@ impl<T: Type> Type for &T {
     fn as_raw_value(&self) -> Option<&Self::RawValueType> {
         (*self).as_raw_value()
     }
+
+    fn raw_element_iter<'a>(
+        &'a self,
+    ) -> Box<dyn Iterator<Item = &'a Self::RawElementValueType> + 'a> {
+        (*self).raw_element_iter()
+    }
 }
 
 impl<T: ToJSON> ToJSON for &T {
@@ -111,9 +131,18 @@ impl<T: ToJSON> ToJSON for &T {
     }
 }
 
+impl<T: ToHeader> ToHeader for &T {
+    fn to_header(&self) -> Option<HeaderValue> {
+        T::to_header(self)
+    }
+}
+
 impl<T: Type> Type for Arc<T> {
     const IS_REQUIRED: bool = T::IS_REQUIRED;
+
     type RawValueType = T::RawValueType;
+
+    type RawElementValueType = T::RawElementValueType;
 
     fn name() -> Cow<'static, str> {
         T::name()
@@ -129,6 +158,12 @@ impl<T: Type> Type for Arc<T> {
 
     fn as_raw_value(&self) -> Option<&Self::RawValueType> {
         self.as_ref().as_raw_value()
+    }
+
+    fn raw_element_iter<'a>(
+        &'a self,
+    ) -> Box<dyn Iterator<Item = &'a Self::RawElementValueType> + 'a> {
+        self.as_ref().raw_element_iter()
     }
 }
 
@@ -154,9 +189,18 @@ impl<T: ToJSON> ToJSON for Arc<T> {
     }
 }
 
+impl<T: ToHeader> ToHeader for Arc<T> {
+    fn to_header(&self) -> Option<HeaderValue> {
+        self.as_ref().to_header()
+    }
+}
+
 impl<T: Type> Type for Box<T> {
     const IS_REQUIRED: bool = T::IS_REQUIRED;
+
     type RawValueType = T::RawValueType;
+
+    type RawElementValueType = T::RawElementValueType;
 
     fn name() -> Cow<'static, str> {
         T::name()
@@ -172,6 +216,12 @@ impl<T: Type> Type for Box<T> {
 
     fn as_raw_value(&self) -> Option<&Self::RawValueType> {
         self.as_ref().as_raw_value()
+    }
+
+    fn raw_element_iter<'a>(
+        &'a self,
+    ) -> Box<dyn Iterator<Item = &'a Self::RawElementValueType> + 'a> {
+        self.as_ref().raw_element_iter()
     }
 }
 
@@ -211,6 +261,12 @@ impl<T: ParseFromMultipartField> ParseFromMultipartField for Box<T> {
 impl<T: ToJSON> ToJSON for Box<T> {
     fn to_json(&self) -> Value {
         self.as_ref().to_json()
+    }
+}
+
+impl<T: ToHeader> ToHeader for Box<T> {
+    fn to_header(&self) -> Option<HeaderValue> {
+        self.as_ref().to_header()
     }
 }
 
