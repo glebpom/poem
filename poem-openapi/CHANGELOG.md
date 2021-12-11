@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [1.0.50] 2021-12-11
+
+- impl `ParseFromParameter` for [T; const LEN: usize].
+- Add `example` attribute for `Object` macro.
+- Add `deny_unknown_fields` attribute for `Object` and `Multipart` macros.
+
 # [1.0.49] 2021-12-10
 
 - Add `Email`/`Hostname` types.
