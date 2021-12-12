@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [1.0.51] 2021-12-12
+
+- Add some methods to specify more API metadata.
+- Add `Response` type, use it to modify the status code and HTTP headers.
+
 # [1.0.50] 2021-12-11
 
 - impl `ParseFromParameter` for [T; const LEN: usize].
