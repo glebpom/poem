@@ -1,6 +1,6 @@
 [package]
 name = "poem"
-version = "1.0.38"
+version = "1.1.0"
 authors = ["sunli <scott_s829@163.com>"]
 edition = "2021"
 description = "Poem is a full-featured and easy-to-use web framework with the Rust programming language."
@@ -35,7 +35,7 @@ tempfile = ["libtempfile"]
 csrf = ["cookie", "base64", "libcsrf"]
 
 [dependencies]
-poem-derive = { path = "../poem-derive", version = "1.0.0" }
+poem-derive = { path = "../poem-derive", version = "1.1.0" }
 
 async-trait = "0.1.51"
 bytes = "1.1.0"
@@ -43,7 +43,7 @@ futures-util = { version = "0.3.17", features = ["sink"] }
 http = "0.2.5"
 hyper = { version = "0.14.13", features = ["http1", "http2", "server", "runtime", "stream"] }
 mime = "0.3.16"
-tokio = { version = "1.12.0", features = ["sync", "rt", "net", "fs", "time", "macros", "signal"] }
+tokio = { version = "1.12.0", features = ["sync", "rt", "net", "fs", "time", "macros"] }
 tokio-util = { version = "0.6.8", features = ["io"] }
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.68"
@@ -55,7 +55,6 @@ percent-encoding = "2.1.0"
 regex = "1.5.4"
 mime_guess = "2.0.3"
 smallvec = "1.6.1"
-nom = "7.0.0"
 tracing = "0.1.29"
 headers = "0.3.4"
 
