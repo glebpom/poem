@@ -9,16 +9,9 @@ mod response;
 use poem::{Request, RequestBody, Result};
 
 pub use self::{
-    attachment::Attachment,
-    binary::{Binary, BinaryStream},
-    json::Json,
-    plain_text::PlainText,
-    response::Response,
+    attachment::Attachment, binary::Binary, json::Json, plain_text::PlainText, response::Response,
 };
-use crate::{
-    registry::{MetaSchemaRef, Registry},
-    ParseRequestError,
-};
+use crate::registry::{MetaSchemaRef, Registry};
 
 /// Represents a payload type.
 pub trait Payload: Send {
@@ -40,8 +33,5 @@ pub trait ParsePayload: Sized {
     const IS_REQUIRED: bool;
 
     /// Parse the payload object from the HTTP request.
-    async fn from_request(
-        request: &Request,
-        body: &mut RequestBody,
-    ) -> Result<Self, ParseRequestError>;
+    async fn from_request(request: &Request, body: &mut RequestBody) -> Result<Self>;
 }
