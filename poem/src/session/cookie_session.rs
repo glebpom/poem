@@ -1,5 +1,7 @@
 use std::{collections::BTreeMap, sync::Arc};
 
+use serde_json::Value;
+
 use crate::{
     middleware::{CookieJarManager, CookieJarManagerEndpoint},
     session::{CookieConfig, Session, SessionStatus},
@@ -49,7 +51,7 @@ impl<E: Endpoint> Endpoint for CookieSessionEndpoint<E> {
         let session = self
             .config
             .get_cookie_value(&cookie_jar)
-            .and_then(|value| serde_json::from_str::<BTreeMap<String, String>>(&value).ok())
+            .and_then(|value| serde_json::from_str::<BTreeMap<String, Value>>(&value).ok())
             .map(Session::new)
             .unwrap_or_else(Session::default);
 
@@ -92,18 +94,18 @@ mod tests {
         client.assert_cookies(vec![]);
 
         client.call(&app, 1).await;
-        client.assert_cookies(vec![("poem-session", r#"{"a":"10","b":"20"}"#)]);
+        client.assert_cookies(vec![("poem-session", r#"{"a":10,"b":20}"#)]);
 
         client.call(&app, 2).await;
-        client.assert_cookies(vec![("poem-session", r#"{"a":"10","b":"20","c":"30"}"#)]);
+        client.assert_cookies(vec![("poem-session", r#"{"a":10,"b":20,"c":30}"#)]);
 
         client.call(&app, 7).await;
 
         client.call(&app, 6).await;
-        client.assert_cookies(vec![("poem-session", r#"{"a":"10","b":"20","c":"30"}"#)]);
+        client.assert_cookies(vec![("poem-session", r#"{"a":10,"b":20,"c":30}"#)]);
 
         client.call(&app, 3).await;
-        client.assert_cookies(vec![("poem-session", r#"{"a":"10","c":"30"}"#)]);
+        client.assert_cookies(vec![("poem-session", r#"{"a":10,"c":30}"#)]);
 
         client.call(&app, 4).await;
         client.assert_cookies(vec![("poem-session", r#"{}"#)]);

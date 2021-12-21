@@ -429,6 +429,13 @@ fn serialize_headers<S: Serializer>(
 
 #[derive(Debug, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct MetaWebhook {
+    pub name: &'static str,
+    pub operation: MetaOperation,
+}
+
+#[derive(Debug, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MetaOperation {
     #[serde(skip)]
     pub method: Method,
@@ -481,6 +488,13 @@ pub struct MetaInfo {
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct MetaServer {
+    pub url: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Default, PartialEq, Serialize)]
+pub struct MetaExternalDocument {
     pub url: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
